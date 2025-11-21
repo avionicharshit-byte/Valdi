@@ -51,6 +51,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Preflight
+        run: |
+          node -v
+          npm -v
+          npm ping
+          npm whoami || echo "OIDC identity will be used"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -64,6 +71,8 @@ jobs:
         run: npm run build
 
       - name: Publish @snap/valdi to npm
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
         run: npm publish --access public
 
   publish-eslint-plugin:
@@ -74,8 +83,16 @@ jobs:
       run:
         working-directory: npm_modules/eslint-plugin-valdi
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Preflight
+        run: |
+          node -v
+          npm -v
+          npm ping
+          npm whoami || echo "OIDC identity will be used"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -90,5 +107,7 @@ jobs:
         run: npm run build
 
       - name: Publish @snap/eslint-plugin-valdi to npm
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
         run: npm publish --access public
 

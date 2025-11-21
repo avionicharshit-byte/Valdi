@@ -1,8 +1,9 @@
 {
   "name": "@snap/valdi",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Valdi CLI tools for developers",
   "license": "ISC",
+  "publishConfig": { "access": "public" },
   "bin": {
     "valdi": "dist/index.js"
   },
