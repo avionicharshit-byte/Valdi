@@ -6,6 +6,7 @@
 
 @implementation SCValdiJSWorker {
     SCNValdiJSRuntime *_jsRuntime;
+    SCNValdiJSRuntimeNativeObjectsManager *_nativeObjectsManager;
 }
 
 - (instancetype)initWithWorkerRuntime:(SCNValdiJSRuntime*)runtime
@@ -19,6 +20,26 @@
     return self;
 }
 
+- (instancetype)initWithWorkerRuntime:(SCNValdiJSRuntime*)runtime
+                 nativeObjectsManager:(SCNValdiJSRuntimeNativeObjectsManager *)nativeObjectsManager
+{
+    self = [super init];
+
+    if (self) {
+        _jsRuntime = runtime;
+        _nativeObjectsManager = nativeObjectsManager;
+    }
+
+    return self;
+}
+
+- (void)dealloc
+{
+    if (_nativeObjectsManager) {
+        [_jsRuntime destroyNativeObjectsManager:_nativeObjectsManager];
+    }
+}
+
 - (std::shared_ptr<Valdi::JavaScriptRuntime>)cppRuntime
 {
     auto cppInterface = djinni_generated_client::valdi::JSRuntime::toCpp(_jsRuntime);
@@ -29,7 +50,7 @@
 
 - (NSInteger)pushModuleAthPath:(NSString *)modulePath inMarshaller:(SCValdiMarshallerRef)marshaller
 {
-    NSInteger objectIndex = [_jsRuntime pushModuleToMarshaller:nil path:modulePath marshallerHandle:(int64_t)marshaller];
+    NSInteger objectIndex = [_jsRuntime pushModuleToMarshaller:_nativeObjectsManager path:modulePath marshallerHandle:(int64_t)marshaller];
     SCValdiMarshallerCheck(marshaller);
     return objectIndex;
 }
@@ -59,6 +80,21 @@
             dispatch_block_t block = ValdiIOS::NSObjectFromValue(wrappedValue);
             block();
         });
+}
+
+- (id<SCValdiJSRuntime>)createScopedJSRuntime
+{
+    SCNValdiJSRuntimeNativeObjectsManager *nativeObjectsManager = [_jsRuntime createNativeObjectsManager];
+    return [[SCValdiJSWorker alloc] initWithWorkerRuntime:_jsRuntime nativeObjectsManager:nativeObjectsManager];
+}
+
+- (void)dispose
+{
+    NSAssert(_nativeObjectsManager, @"Cannot dispose a scoped JSRuntime that was not created with createScopedJSRuntime");
+
+    if (_nativeObjectsManager) {
+        [_jsRuntime destroyNativeObjectsManager:_nativeObjectsManager];
+    }
 }
 
 - (void)dispatchInJsThreadSyncWithBlock:(dispatch_block_t)block

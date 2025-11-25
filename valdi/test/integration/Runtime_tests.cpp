@@ -6170,6 +6170,34 @@ TEST_P(RuntimeFixture, supportsUserCreatedNativeObjects) {
     ASSERT_TRUE(retValue.isUndefined());
 }
 
+TEST_P(RuntimeFixture, destroysNativeRefsWhenUserCreatedContextIsDestroyed) {
+    Ref<MyNativeObject> nativeObject = makeShared<MyNativeObject>();
+
+    auto jsResult = callFunctionSync(wrapper,
+                                     nullptr,
+                                     "test/src/DestroyRefOnChildContext",
+                                     "createChildContext",
+                                     {Value(makeShared<ValueFunctionWithCallable>(
+                                         [nativeObject = nativeObject.get()](const auto& callContext) -> Value {
+                                             return Value(Ref<ValdiObject>(nativeObject));
+                                         }))});
+
+    ASSERT_TRUE(jsResult) << jsResult.description();
+
+    auto contextId = static_cast<ContextId>(jsResult.value().getMapValue("contextId").toInt());
+
+    ASSERT_EQ(2, contextId);
+
+    // 1 ref in the test, 1 in JS
+    ASSERT_EQ(2, nativeObject.use_count());
+
+    wrapper.runtime->getContextManager().destroyContext(contextId);
+    wrapper.flushQueues();
+
+    // The native reference should have been released
+    ASSERT_EQ(1, nativeObject.use_count());
+}
+
 TEST_P(RuntimeFixture, canDumpLogs) {
     wrapper.createViewNodeTreeAndContext(
         STRING_LITERAL("DumpLogTest@test/src/DumpLogTest"), Value(makeShared<ValueMap>()), Value::undefined());

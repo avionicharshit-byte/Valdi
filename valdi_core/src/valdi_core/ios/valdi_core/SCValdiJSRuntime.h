@@ -37,6 +37,22 @@ generated code to call functions defined in your Valdi modules.
  */
 - (void)addHotReloadObserverWithBlock:(dispatch_block_t)block forModulePath:(NSString*)modulePath;
 
+/**
+ * Create a new scoped JSRuntime.
+ * The scoped JSRuntime will have its own native objects manager, which will cause all native
+ * references emitted during interactions with the scoped JSRuntime to be disposed when
+ * the scoped JSRuntime itself is disposed. You can use createScopedJSRuntime when you have a
+ * bounded task and want to eagerly dipose native references when the task is done, rather than
+ * wait until the JS engine garbage collects them.
+ */
+- (id<SCValdiJSRuntime>)createScopedJSRuntime;
+
+/**
+ * Destroy the JSRuntime. This is only legal to call on a JSRuntime instance returned from createScopedJSRuntime.
+ * If not called, scoped JSRuntimes will be disposed when their reference count reaches 0.
+ */
+- (void)dispose;
+
 - (void)dispatchInJsThread:(dispatch_block_t)block;
 
 - (void)dispatchInJsThreadSyncWithBlock:(dispatch_block_t)block;
