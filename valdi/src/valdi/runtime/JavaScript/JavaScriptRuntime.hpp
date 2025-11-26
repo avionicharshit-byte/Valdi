@@ -422,6 +422,7 @@ private:
     JSValueRef runtimeGetAssets(JSFunctionNativeCallContext& callContext);
     JSValueRef runtimeMakeDirectionalAsset(JSFunctionNativeCallContext& callContext);
     JSValueRef runtimeMakePlatformSpecificAsset(JSFunctionNativeCallContext& callContext);
+    JSValueRef runtimeGetLoadedAssetMetadata(JSFunctionNativeCallContext& callContext);
     JSValueRef runtimeSetColorPalette(JSFunctionNativeCallContext& callContext);
     JSValueRef runtimeTakeElementSnapshot(JSFunctionNativeCallContext& callContext);
     JSValueRef runtimeGetNativeNodeForElementId(JSFunctionNativeCallContext& callContext);

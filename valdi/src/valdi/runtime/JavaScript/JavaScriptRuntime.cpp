@@ -31,6 +31,7 @@
 #include "valdi/runtime/Resources/PlatformSpecificAsset.hpp"
 #include "valdi/runtime/ValdiRuntimeTweaks.hpp"
 #include "valdi_core/cpp/Constants.hpp"
+#include "valdi_core/cpp/Resources/LoadedAsset.hpp"
 #include "valdi_core/cpp/Resources/ResourceId.hpp"
 #include "valdi_core/cpp/Utils/ConsoleLogger.hpp"
 #include "valdi_core/cpp/Utils/LoggerUtils.hpp"
@@ -1640,6 +1641,20 @@ JSValueRef JavaScriptRuntime::runtimeMakePlatformSpecificAsset(JSFunctionNativeC
     return makeWrappedObject(callContext.getContext(), asset, callContext.getExceptionTracker(), false);
 }
 
+JSValueRef JavaScriptRuntime::runtimeGetLoadedAssetMetadata(JSFunctionNativeCallContext& callContext) {
+    auto loadedAsset = castOrNull<LoadedAsset>(callContext.getParameterAsWrappedObject(0));
+    CHECK_CALL_CONTEXT(callContext);
+
+    if (loadedAsset == nullptr) {
+        return callContext.throwError(Error("Invalid loaded asset"));
+    }
+
+    auto metadata = loadedAsset->getMetadata();
+
+    return valueToJSValue(
+        callContext.getContext(), metadata, ReferenceInfoBuilder(), callContext.getExceptionTracker());
+}
+
 JSValueRef JavaScriptRuntime::runtimeAddAssetLoadObserver(JSFunctionNativeCallContext& callContext) {
     auto assetValue = callContext.getParameterAsValue(0);
     CHECK_CALL_CONTEXT(callContext);
@@ -2202,6 +2217,7 @@ void JavaScriptRuntime::buildContext(Valdi::IJavaScriptContext& context,
 
     JS_BIND(context, exceptionTracker, runtimeObject, "makeDirectionalAsset", runtimeMakeDirectionalAsset);
     JS_BIND(context, exceptionTracker, runtimeObject, "makePlatformSpecificAsset", runtimeMakePlatformSpecificAsset);
+    JS_BIND(context, exceptionTracker, runtimeObject, "getLoadedAssetMetadata", runtimeGetLoadedAssetMetadata);
     JS_BIND(context, exceptionTracker, runtimeObject, "setColorPalette", runtimeSetColorPalette);
     JS_BIND(context, exceptionTracker, runtimeObject, "onMainThreadIdle", runtimeOnMainThreadIdle);
     JS_BIND(context, exceptionTracker, runtimeObject, "createWorker", runtimeCreateWorker);

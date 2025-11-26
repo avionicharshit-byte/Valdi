@@ -40,9 +40,19 @@ SkCodecAnimatedImage::SkCodecAnimatedImage(std::unique_ptr<SkCodec> codec)
     for (size_t i = 0; i < totalFrames; i++) {
         totalAnimationDurationMs += frameInfos[i].fDuration;
     }
+    _numberOfFrames = totalFrames;
     _duration = Duration::fromMilliseconds(totalAnimationDurationMs);
     _frameRate = _frameRate = codec->getFrameCount() / _duration.seconds();
     _player = std::make_unique<SkAnimCodecPlayer>(std::move(codec));
+}
+
+Valdi::Value SkCodecAnimatedImage::getMetadata() const {
+    return Valdi::Value()
+        .setMapValue("type", Valdi::Value(Valdi::StringBox::fromCString("skcodec")))
+        .setMapValue("width", Valdi::Value(static_cast<int32_t>(_size.width)))
+        .setMapValue("height", Valdi::Value(static_cast<int32_t>(_size.height)))
+        .setMapValue("numberOfFrames", Valdi::Value(static_cast<int32_t>(_numberOfFrames)))
+        .setMapValue("durationMs", Valdi::Value(static_cast<int32_t>(_duration.milliseconds())));
 }
 
 void SkCodecAnimatedImage::doDraw(SkCanvas* canvas,
