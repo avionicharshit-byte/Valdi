@@ -1727,6 +1727,26 @@ export interface ScrollView extends _ScrollView, CommonView, ContainerTemplateEl
   fadingEdgeLength?: number;
 
   /**
+   * Enable or disable the fading edge effect at the start of the scroll view
+   * (top edge for vertical scroll, left edge for horizontal scroll)
+   *
+   * Only applies if fadingEdgeLength is greater than 0
+   *
+   * @default: true
+   */
+  fadingEdgeStart?: boolean;
+
+  /**
+   * Enable or disable the fading edge effect at the end of the scroll view
+   * (bottom edge for vertical scroll, right edge for horizontal scroll)
+   *
+   * Only applies if fadingEdgeLength is greater than 0
+   *
+   * @default: true
+   */
+  fadingEdgeEnd?: boolean;
+
+  /**
    * [iOS-Only]
    * Defines the rate at which the scroll view decelerates after
    * a fling gesture.

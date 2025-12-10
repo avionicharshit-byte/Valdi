@@ -142,6 +142,22 @@ open class ValdiScrollView(context: Context) : ValdiView(context, attributeSet(c
         get() = dragGestureRecognizer.cancelsTouchesOnScroll
         set(value) { dragGestureRecognizer.cancelsTouchesOnScroll = value }
 
+    var fadingEdgeStartEnabled: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                postInvalidateOnAnimation()
+            }
+        }
+
+    var fadingEdgeEndEnabled: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                postInvalidateOnAnimation()
+            }
+        }
+
     var dismissKeyboardOnDrag = false
 
     var dismissKeyboardMode = KeyboardDismissMode.IMMEDIATE
@@ -808,12 +824,14 @@ open class ValdiScrollView(context: Context) : ValdiView(context, attributeSet(c
     }
 
     override fun getTopFadingEdgeStrength(): Float {
+        if (!fadingEdgeStartEnabled) return 0.0f
         val offsetY = computeVerticalScrollOffset()
         val maxOffset = minOf(getVerticalFadingEdgeLength(), contentHeight - height)
         return fadeStrengthForOffset(offsetY, maxOffset)
     }
 
     override fun getBottomFadingEdgeStrength(): Float {
+        if (!fadingEdgeEndEnabled) return 0.0f
         val offsetY = computeVerticalScrollOffset()
         val remaining = contentHeight - height - offsetY
         val maxOffset = minOf(getVerticalFadingEdgeLength(), contentHeight - height)
@@ -821,12 +839,14 @@ open class ValdiScrollView(context: Context) : ValdiView(context, attributeSet(c
     }
 
     override fun getLeftFadingEdgeStrength(): Float {
+        if (!fadingEdgeStartEnabled) return 0.0f
         val offsetX = computeHorizontalScrollOffset()
         val maxOffset = minOf(getHorizontalFadingEdgeLength(), contentWidth - width)
         return fadeStrengthForOffset(offsetX, maxOffset)
     }
 
     override fun getRightFadingEdgeStrength(): Float {
+        if (!fadingEdgeEndEnabled) return 0.0f
         val offsetX = computeHorizontalScrollOffset()
         val remaining = contentWidth - width - offsetX
         val maxOffset = minOf(getHorizontalFadingEdgeLength(), contentWidth - width)

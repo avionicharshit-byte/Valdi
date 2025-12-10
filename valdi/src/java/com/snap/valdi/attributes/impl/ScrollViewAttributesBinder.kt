@@ -139,6 +139,22 @@ class ScrollViewAttributesBinder(private val coordinateResolver: CoordinateResol
         applyFadingEdgeLength(view, 0f, animator)
     }
 
+    fun applyFadingEdgeStart(view: ValdiScrollView, value: Boolean, animator: ValdiAnimator?) {
+        view.fadingEdgeStartEnabled = value
+    }
+
+    fun resetFadingEdgeStart(view: ValdiScrollView, animator: ValdiAnimator?) {
+        view.fadingEdgeStartEnabled = true
+    }
+
+    fun applyFadingEdgeEnd(view: ValdiScrollView, value: Boolean, animator: ValdiAnimator?) {
+        view.fadingEdgeEndEnabled = value
+    }
+
+    fun resetFadingEdgeEnd(view: ValdiScrollView, animator: ValdiAnimator?) {
+        view.fadingEdgeEndEnabled = true
+    }
+
     fun applyDecelerationRate(view: ValdiScrollView, value: String, animator: ValdiAnimator?) {
         // no-op for now
     }
@@ -186,6 +202,8 @@ class ScrollViewAttributesBinder(private val coordinateResolver: CoordinateResol
         attributesBindingContext.bindBooleanAttribute("cancelsTouchesOnScroll", false, this::applyCancelsTouchesOnScroll, this::resetCancelsTouchesOnScroll)
         attributesBindingContext.bindUntypedAttribute("scrollPerfLoggerBridge", false, this::applyScrollPerfLoggerBridge, this::resetScrollPerfLoggerBridge)
         attributesBindingContext.bindFloatAttribute("fadingEdgeLength", false, this::applyFadingEdgeLength, this::resetFadingEdgeLength)
+        attributesBindingContext.bindBooleanAttribute("fadingEdgeStart", false, this::applyFadingEdgeStart, this::resetFadingEdgeStart)
+        attributesBindingContext.bindBooleanAttribute("fadingEdgeEnd", false, this::applyFadingEdgeEnd, this::resetFadingEdgeEnd)
         attributesBindingContext.bindStringAttribute("decelerationRate", false, this::applyDecelerationRate, this::resetDecelerationRate)
         attributesBindingContext.bindBooleanAttribute("bounces", false, this::applyBounces, this::resetBounces)
 
