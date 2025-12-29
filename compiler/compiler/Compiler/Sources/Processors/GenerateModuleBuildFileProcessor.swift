@@ -253,10 +253,10 @@ private struct ModuleBuildFile {
             \n    sql_db_names = [\(outputSqlDatabaseNames)],
             """)
         }
-        
+
         if !config.iosGeneratedContextFactories.isEmpty {
             let iosGeneratedContextFactories = config.iosGeneratedContextFactories
-            
+
             let outputGeneratedContextFactoryNames = iosGeneratedContextFactories.map { "\"\($0)\"" }.joined(separator: ", ")
             contents.append("""
             \n    ios_generated_context_factories = [\(outputGeneratedContextFactoryNames)],
@@ -334,6 +334,7 @@ private struct ModuleBuildFile {
                 name = "\(config.name)_sql_srcs",
                 srcs = glob(["**/*.sq", "**/*.sqm", "**/*.yaml"]),
                 strip_prefix = strip_prefix.from_pkg(),
+                visibility = ["//visibility:public"],
             )
 
             pkg_zip(
