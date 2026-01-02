@@ -184,6 +184,12 @@ struct CPPFunctionArgument {
     }
 }
 
+enum CppMethodSpecifiers {
+    case none
+    case const
+    case static_
+}
+
 struct CppClassWriter {
     let namespace: CPPNamespace
     let className: String
@@ -215,20 +221,30 @@ struct CppClassWriter {
         return arguments.map { $0.resolve(namespace: namespace) }.joined(separator: ", ")
     }
 
-    func writeMethod(name: String, arguments: [CPPFunctionArgument], returnType: CPPTypeNameResolver, specifiers: String?, writeBody: (CodeWriter) -> Void) {
-        if let specifiers {
-            header.appendBody("\(specifiers) ")
+    func writeMethod(name: String, arguments: [CPPFunctionArgument], returnType: CPPTypeNameResolver, specifiers: CppMethodSpecifiers, writeBody: (CodeWriter) -> Void) {
+        if specifiers == .static_ {
+            header.appendBody("static ")
         }
 
         if inlineImplementation {
             let methodPrefix = resolveMethodReturnType(namespace: headerNamespace, returnTypeResolver: returnType)
             header.appendBody("\(methodPrefix)\(name)(\(self.resolveArguments(namespace: headerNamespace, arguments: arguments)))")
+            if specifiers == .const {
+                header.appendBody(" const")
+            }
             writeMethodImpl(writer: header, writeBody: writeBody)
         } else {
             let methodPrefixHeader = resolveMethodReturnType(namespace: headerNamespace, returnTypeResolver: returnType)
             let methodPrefixImpl = resolveMethodReturnType(namespace: namespace, returnTypeResolver: returnType)
-            header.appendBody("\(methodPrefixHeader)\(name)(\(self.resolveArguments(namespace: headerNamespace, arguments: arguments)));\n\n")
+            header.appendBody("\(methodPrefixHeader)\(name)(\(self.resolveArguments(namespace: headerNamespace, arguments: arguments)))")
+            if specifiers == .const {
+                header.appendBody(" const")
+            }
+            header.appendBody(";\n\n")
             impl.appendBody("\(methodPrefixImpl)\(className)::\(name)(\(self.resolveArguments(namespace: namespace, arguments: arguments)))")
+            if specifiers == .const {
+                impl.appendBody(" const")
+            }
             writeMethodImpl(writer: impl, writeBody: writeBody)
         }
     }
@@ -502,8 +518,15 @@ final class CppCodeGenerator {
     }
 
     private func getPromiseTypeParser(valueTypeParser: CppTypeParser) -> CppTypeParser {
-        // TODO(simon): Implement
-        return getUntypedTypeParser()
+        header.includeSection.addInclude(path: "valdi_core/cpp/Utils/Future.hpp")
+
+        return CppTypeParser(
+            typeNameResolver: CPPTypeNameResolver.with(templateType: CppCodeGenerator.getValdiTypeName(typeName: "Future"), typeArgument: valueTypeParser.typeNameResolver),
+            method: nil,
+            isMovable: true,
+            isIntrinsicallyNullable: false,
+            defaultInitializationString: nil
+        )
     }
 
     private func getFunctionTypeParser(parameters: [ValdiModelProperty], returnType: ValdiModelPropertyType, namePaths: [String], nameAllocator: PropertyNameAllocator) throws -> CppTypeParser {

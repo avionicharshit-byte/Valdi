@@ -1017,6 +1017,8 @@ def _exported_objc_lib(name, ios_module_name, objc_hdrs, objc_srcs, single_file_
     )
 
 def _setup_cpp_target(name, deps, compiled_module_target, visibility, single_file_codegen):
+    cpp_strip_prefix = "cpp/release/src"
+
     # C++ codegen always outputs to release configuration
     if single_file_codegen:
         # For single file codegen, extract individual .cpp and .hpp files
@@ -1043,20 +1045,22 @@ def _setup_cpp_target(name, deps, compiled_module_target, visibility, single_fil
             name = cpp_srcs_name,
             compiled_module = compiled_module_target,
             extension = ".cpp",
+            strip_prefix = cpp_strip_prefix,
         )
 
         extract_cpp_srcs(
             name = cpp_hdrs_name,
             compiled_module = compiled_module_target,
             extension = ".hpp",
+            strip_prefix = cpp_strip_prefix,
         )
 
         cpp_srcs = [native.package_relative_label(cpp_srcs_name)]
         cpp_hdrs = [native.package_relative_label(cpp_hdrs_name)]
 
-    # For single_file_codegen, we need to strip the include prefix to make headers findable
-    # For multi-file codegen, the extract_cpp_srcs rule preserves directory structure
-    # C++ codegen always outputs to release configuration
+    # C++ codegen always outputs to release configuration.
+    # Both single_file_codegen and multi-file codegen strip the cpp/release/src/ prefix
+    # so that #include "valdi_modules/..." works correctly.
     cc_library_kwargs = {
         "name": name + "_cpp",
         "srcs": cpp_srcs,
@@ -1066,9 +1070,8 @@ def _setup_cpp_target(name, deps, compiled_module_target, visibility, single_fil
     }
 
     if single_file_codegen:
-        # For single file mode, strip the cpp/release/src prefix
-        # so that #include "module/file.hpp" works correctly
-        cc_library_kwargs["strip_include_prefix"] = "cpp/release/src"
+        # For single file mode, strip via cc_library's strip_include_prefix
+        cc_library_kwargs["strip_include_prefix"] = cpp_strip_prefix
     else:
         # For multi-file mode, the extracted directory contains subdirectories
         # We need to add it as an include path
